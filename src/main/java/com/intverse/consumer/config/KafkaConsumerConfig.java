@@ -22,8 +22,8 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
 
-    @Value("${spring.kafka.consumer.auto-offset-reset}")
-    private String autoOffsetReset;
+//    @Value("${spring.kafka.consumer.auto-offset-reset}")
+//    private String autoOffsetReset;
 
     @Value("${spring.kafka.consumer.key-deserializer}")
     private String keySerializer;
@@ -42,6 +42,8 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keySerializer);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueSerializer);
+//        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        config.put("auto.leader.rebalance.enable", false);
 
         return new DefaultKafkaConsumerFactory<>(config);
     }
