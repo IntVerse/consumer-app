@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class IntverseConsumer {
-    @KafkaListener(topics = "NewTopic", groupId = "group_id")
+    @KafkaListener(topics = "intverse_test_topic")
     public void consume(String message) {
-        System.out.println("message = " + message);
+        System.out.println("Consumed Message = " + message);
     }
 }
