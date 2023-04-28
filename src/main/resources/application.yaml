@@ -1,0 +1,24 @@
+spring:
+  application.name: intverse-kafka-consumer
+  kafka:
+    bootstrap-servers: redpanda-0.redpanda.aws.intverse.io:31092,redpanda-1.redpanda.aws.intverse.io:31092,redpanda-2.redpanda.aws.intverse.io:31092
+    topic: intverse-topic
+    consumer:
+      group-id: intverse-kafka-consumer
+    properties:
+      sasl:
+        mechanism: SCRAM-SHA-512
+        username: 'intverseuser'
+        password: 'intverse123'
+      security:
+        protocol: SASL_SSL
+    ssl:
+      type: JKS
+      algorithm: https
+      client-auth: required
+      truststore-location: src/main/resources/truststore.jks
+      truststore-password: changeit
+  logging:
+    level:
+      ROOT: TRACE
+

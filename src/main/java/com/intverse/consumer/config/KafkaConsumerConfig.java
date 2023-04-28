@@ -1,6 +1,8 @@
 package com.intverse.consumer.config;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.config.SslConfigs;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,44 +18,79 @@ import java.util.Map;
 @EnableKafka
 public class KafkaConsumerConfig {
 
-    @Value("${spring.kafka.consumer.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
 
-//    @Value("${spring.kafka.consumer.auto-offset-reset}")
-//    private String autoOffsetReset;
 
-    @Value("${spring.kafka.consumer.key-deserializer}")
-    private String keySerializer;
+    @Value("${spring.kafka.properties.sasl.mechanism}")
+    private String mechanism;
 
-    @Value("${spring.kafka.consumer.value-deserializer}")
-    private String valueSerializer;
+    @Value("${spring.kafka.properties.sasl.username}")
+    private String username;
+
+    @Value("${spring.kafka.properties.sasl.password}")
+    private String password;
+
+    @Value("${spring.kafka.properties.security.protocol}")
+    private String securityProtocol;
+
+    @Value("${spring.kafka.ssl.type}")
+    private String sslType;
+
+    @Value("${spring.kafka.ssl.algorithm}")
+    private String algorithm;
+
+    @Value("${spring.kafka.ssl.client-auth}")
+    private String clientAuth;
+
+    @Value("${spring.kafka.ssl.truststore-location}")
+    private String trustStoreLocation;
+
+    @Value("${spring.kafka.ssl.truststore-password}")
+    private String trustStorePassword;
+
+    @Bean
+    public Map<String, Object> consumerConfigs() {
+        Map<String, Object> props = new HashMap<>();
+
+        // bootstrap servers
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+
+        // consumer properties
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+
+        // sasl properties
+        props.put("security.protocol", securityProtocol);
+        props.put("sasl.mechanism", mechanism);
+        props.put("sasl.jaas.config", "org.apache.kafka.common.security.scram.ScramLoginModule required " +
+                "username=\"" + username + "\" password=\"" + password + "\";");
+
+        // ssl properties
+        props.put(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, algorithm);
+        props.put("ssl.client.auth", clientAuth);
+        props.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, sslType);
+        props.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, trustStoreLocation);
+        props.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, trustStorePassword);
+
+        return props;
+    }
 
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
-
-        // Creating a Map of string-object pairs
-        Map<String, Object> config = new HashMap<>();
-
-        // Adding the Configuration
-        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keySerializer);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueSerializer);
-//        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        config.put("auto.leader.rebalance.enable", false);
-
-        return new DefaultKafkaConsumerFactory<>(config);
+        return new DefaultKafkaConsumerFactory<>(consumerConfigs());
     }
 
-    public ConcurrentKafkaListenerContainerFactory
-    concurrentKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<
-                String, String> factory
-                = new ConcurrentKafkaListenerContainerFactory<>();
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }
+
 }

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class IntverseConsumer {
-    @KafkaListener(topics = "intverse_test_topic")
+    @KafkaListener(topics = "intverse-topic")
     public void consume(String message) {
         System.out.println("Consumed Message = " + message);
     }
